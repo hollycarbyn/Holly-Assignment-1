@@ -1,0 +1,65 @@
+#loaded the 'tidyverse' package
+library(tidyverse)
+
+#read in the avengers dataset
+avengersdata <- read.csv("avengers.csv")
+
+#inspected data for missing or unusual values
+View(avengersdata)
+
+#removed cases with missing values
+avengersdata1 <- na.omit(avengersdata)
+
+#created a variable called CombatEffectiveness consisting of the sum of agility, speed, strength and willpower
+avengersdata1 <- mutate(avengersdata1, CombatEffectiveness = (agility + speed + strength + willpower))
+
+#created a new copy of the data of avengers with no superpowers who have died 
+avengersdata2 <- filter(avengersdata1, died == 'yes', superpower == 'no')
+
+#saved this new data set using the csv and spss formats
+write_csv(avengersdata2, file = "avengersdata2.csv")
+
+library(haven)
+write_sav(avengersdata2, "avengersdata2.sav")
+          
+#summarized combat effectiveness, kills, and injuries using mean, SD, and range 
+summarise(avengersdata2, avg_combateffectiveness = mean(CombatEffectiveness), sd_combateffectiveness = sd(CombatEffectiveness), 
+          min_combateffectiveness = min(CombatEffectiveness), max_combateffectiveness = max(CombatEffectiveness), 
+          avg_kills = mean(kills), sd_kills = sd(kills), min_kills = min(kills), max_kills=max(kills), 
+          avg_injuries = mean(injuries), sd_injuries = sd(injuries), min_injuries = min(injuries), max_injuries = max(injuries))
+
+#summarized combat effectiveness, kills, and injuries using mean, SD, and range based on battlefield location
+north.avengers <- filter(avengersdata2, north_south == "north")
+south.avengers <- filter(avengersdata2, north_south == "south")
+
+summarise(north.avengers, avg_combateffectiveness = mean(CombatEffectiveness), sd_combateffectiveness = sd(CombatEffectiveness),
+          min_combateffectiveness = min(CombatEffectiveness), max_combateffectiveness = max(CombatEffectiveness), 
+          avg_kills = mean(kills), sd_kills = sd(kills), min_kills = min(kills), max_kills = max(kills),
+          avg_injuries = mean(injuries), sd_injuries = sd(injuries), min_injuries = min(injuries), max_injuries = max(injuries))
+
+summarise(south.avengers, avg_combateffectiveness = mean(CombatEffectiveness), sd_combateffectiveness = sd(CombatEffectiveness), 
+          min_combateffectiveness = min(CombatEffectiveness), max_combateffectiveness = max(CombatEffectiveness), 
+          avg_kills = mean(kills), sd_kills = sd(kills), min_kills = min(kills), max_kills = max(kills),
+          avg_injuries = mean(injuries), sd_injuries = sd(injuries), min_injuries = min(injuries), max_injuries = max(injuries))
+
+# installed the package 'pwr' so I could run a power analysis
+install.packages("pwr")
+library(pwr)
+
+#ran a power analysis to determine the sample size needed for for an independent t-test
+pwr.t.test(d = .3 ,sig.level = .05, power = 0.8, alternative = "two.sided", type = "two.sample")
+
+#installed the package 'TOSTER' 
+install.packages("TOSTER")
+library(TOSTER)
+
+#ran an equivalence test to solve for power
+powerTOSTtwo(alpha = 0.05, N = 176, low_eqbound_d = -0.3, high_eqbound_d = 0.3)
+
+#installed the 'effectsize' package
+install.packages("effectsize")
+library(effectsize)
+
+#calculated the relevant effect size and 95% confidence interval 
+t_to_d(4.25, df_error = 32+780-2, paired = FALSE)
+
